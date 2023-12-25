@@ -1,10 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
-import  waterCourseReducer from './slices/waterCourseSlice';
+import waterCourseReducer from './slices/waterCourseSlice';
+import thailandDatabaseReducer from './slices/thailandDatabaseSlice';
 import { useDispatch } from 'react-redux';
+import waterCoursefindReducer from './slices/waterCoursefindSlice';
 
 export const store = configureStore({
   reducer: {
     waterCourse: waterCourseReducer,
+    thailandDatabase: thailandDatabaseReducer,
+    waterCoursefind: waterCoursefindReducer
   },
 });
 

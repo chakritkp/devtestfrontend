@@ -1,9 +1,4 @@
-import React, { useEffect } from "react";
-import {
-  fetchData,
-  waterCourseSeletor,
-} from "../store/slices/waterCourseSlice";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import InputComponent, {
@@ -15,6 +10,17 @@ import { FontTitle } from "../style-component/FontComponent";
 import TableComponent from "../component/TableComponent";
 import ButtonComponent from "../style-component/ButtonComponent";
 import { IoMdAdd } from "react-icons/io";
+import { useSelector } from "react-redux";
+import {
+  WaterCourse,
+  deleteData,
+  fetchData,
+  setEndDate,
+  setSearchTerm,
+  setSelectedTypeID,
+  setStartDate,
+  waterCourseSeletor,
+} from "../store/slices/waterCourseSlice";
 import { useAppDispatch } from "../store/store";
 
 export const HeaderContainer = styled.div`
@@ -39,11 +45,78 @@ const FilterContainer = styled.div`
 
 const Home: React.FC = () => {
   const waterCourses = useSelector(waterCourseSeletor);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchTerm, setSearchTermLocal] = useState<string>("");
+  const [reload, setReload] = useState<boolean>(false);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(fetchData());
-  }, [dispatch]);
+    setReload(false);
+  }, [dispatch, reload]);
+
+  useEffect(() => {
+    dispatch(setSearchTerm(searchTerm));
+  }, [dispatch, searchTerm]);
+
+  const handleChangeFilterType = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    dispatch(setSelectedTypeID(Number(event.target.value)));
+  };
+
+  const handleChangeFilterStartDate = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    dispatch(setStartDate(new Date(event.target.value)));
+  };
+
+  const handleChangeFilterEndDate = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    dispatch(setEndDate(new Date(event.target.value)))
+  }
+
+  const handleResetFilter = () => {
+    setSearchTermLocal('')
+    dispatch(setSearchTerm(''));
+    dispatch(setSelectedTypeID(Number(0)));
+    dispatch(setStartDate(new Date()));
+    dispatch(setStartDate(new Date()));
+  }
+
+  const getPaginatedData = (pageNumber: number) => {
+    const pageSize = 15;
+    const maxPage = Math.ceil(waterCourses.length / pageSize);
+
+    if (pageNumber <= 0) {
+      return waterCourses.slice(0, pageSize);
+    }
+
+    if (pageNumber > maxPage) {
+      return waterCourses.slice((maxPage - 1) * pageSize, maxPage * pageSize);
+    }
+
+    const startIndex = (pageNumber - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return waterCourses.slice(startIndex, endIndex);
+  };
+
+  const currentData = getPaginatedData(currentPage);
+
+  const handleDetele = (id: number) => {
+    const isFoundID = waterCourses.some((item) => item.obstacle_id === id);
+
+    if (isFoundID) {
+      if (window.confirm("คุณต้องการลบรายการนี้หรือไม่?")) {
+        dispatch(deleteData(id));
+        setReload(true);
+      }
+    } else {
+      alert("ไม่พบรายการที่ต้องการลบในฐานข้อมูล");
+    }
+  };
 
   return (
     <>
@@ -63,13 +136,15 @@ const Home: React.FC = () => {
             id=""
             placeholder="ค้นหาชื่อหรือประเภทอุปสรรค..."
             inputname={"ค้นหา"}
+            value={searchTerm}
+            onChange={(e) => setSearchTermLocal(e.target.value)}
           />
         </div>
         <div style={{ gridColumn: `span 1` }}>
           <InputContainerConmponent>
             <InputLabel>ประเภทอุปสรรค</InputLabel>
-            <Select name="" id="">
-              <option defaultValue={""}>ทั้งหมด</option>
+            <Select name="" id="" onChange={handleChangeFilterType}>
+              <option value="0">ทั้งหมด</option>
               <option value="1">น้ำท่วมถนน</option>
               <option value="2">สะพานขาด</option>
               <option value="3">ถนนขาด</option>
@@ -83,6 +158,8 @@ const Home: React.FC = () => {
             name="startdate"
             id="startdate"
             inputname={"วันที่ ตั้งแต่"}
+            value={undefined}
+            onChange={handleChangeFilterStartDate}
           />
         </div>
         <div style={{ gridColumn: `span 1` }}>
@@ -91,6 +168,8 @@ const Home: React.FC = () => {
             name="enddate"
             id="enddate"
             inputname={"วันที่ ถึง"}
+            value={undefined}
+            onChange={handleChangeFilterEndDate}
           />
         </div>
         <div
@@ -109,12 +188,19 @@ const Home: React.FC = () => {
               fontSize: `0.75rem`,
               fontWeight: `700`,
             }}
+            onClick={handleResetFilter}
           >
             Clear
           </button>
         </div>
       </FilterContainer>
-      <TableComponent />
+      <TableComponent
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        waterCourses={waterCourses}
+        currentData={currentData}
+        handleDetele={handleDetele}
+      />
     </>
   );
 };

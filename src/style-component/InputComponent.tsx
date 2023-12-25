@@ -5,6 +5,7 @@ interface InputComponentProps extends InputHTMLAttributes<HTMLInputElement> {
   // children: ReactNode;
   type: string;
   inputname: string;
+  value: string | number | readonly string[] | undefined;
 }
 
 export const InputContainerConmponent = styled.div`
@@ -24,15 +25,27 @@ export const InputLabel = styled.label`
   color: #cecece;
 `;
 
-const Input = styled.input`
+export const Input = styled.input`
   width: 100%;
   padding: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid #e0e0e0;
 
+  /* &::before {
+    content: attr(placeholder);
+    position: absolute;
+    top: 50%;
+    left: 0.5rem;
+    transform: translateY(-25%);
+    color: #d9d9d9;
+  } */
+
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
     -webkit-appearance: none;
+  }
+
+  &::-webkit-calendar-picker-indicator {
   }
 
   &::placeholder {
@@ -52,19 +65,30 @@ export const TextArea = styled.textarea`
   padding: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid #e0e0e0;
-`
+`;
 
 const InputComponent: React.FC<InputComponentProps> = ({
   // children,
   inputname,
   type,
+  value,
   ...rest
 }) => {
+
+  let formattedValue = value;
+
+  if (type === 'date' && value instanceof Date) {
+    formattedValue = value.toISOString().split('T')[0];
+  }
 
   return (
     <InputContainerConmponent>
       <InputLabel>{inputname}</InputLabel>
-      <Input type={type || "text"} {...rest} />
+      {type === 'date' ? (
+        <Input type="date" value={formattedValue} {...rest} />
+      ) : (
+        <Input type={type || "text"} value={value} {...rest} />
+      )}
     </InputContainerConmponent>
   );
 };

@@ -1,29 +1,30 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { HeaderContainer } from "./Home";
 import InputComponent, {
   InputContainerConmponent,
   InputLabel,
   Select,
   TextArea,
 } from "../style-component/InputComponent";
+import { FormLeft, FormRight, Row } from "./Upload";
 import { FontTitle } from "../style-component/FontComponent";
-import ButtonComponent from "../style-component/ButtonComponent";
-import { IoArrowBack } from "react-icons/io5";
-import { FaSave } from "react-icons/fa";
-import { MdAddLocationAlt } from "react-icons/md";
+import { MdModeEditOutline } from "react-icons/md";
+import { HeaderContainer } from "./Home";
 import { IoIosCloseCircle } from "react-icons/io";
-import { Link, useNavigate } from "react-router-dom";
+import { IoArrowBack } from "react-icons/io5";
 import GoogleMapComponent from "../component/GoogleMapComponent ";
-import {
-  createData,
-  fetchData,
-  waterCourseSeletor,
-} from "../store/slices/waterCourseSlice";
-import { useAppDispatch } from "../store/store";
+import { MdAddLocationAlt } from "react-icons/md";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useAppDispatch } from "../store/store";
+import {
+  fetchSelectData,
+  waterCoursefindSeletor,
+} from "../store/slices/waterCoursefindSlice";
+import ButtonComponent from "../style-component/ButtonComponent";
+import { editData } from "../store/slices/waterCourseSlice";
 
-export const FormContainer = styled.div`
+const UpdateForm = styled.form`
   width: 100%;
   display: flex;
   justify-content: center;
@@ -32,59 +33,15 @@ export const FormContainer = styled.div`
   background-color: #fafbfd;
 `;
 
-export const FormLeft = styled.div`
-  width: 50%;
-  background-color: #fff;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-`;
-
-export const FormRight = styled.div`
-  width: 50%;
-  background-color: #fff;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-`;
-
-export const Row = styled.div`
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-gap: 1rem;
-`;
-
-const Upload: React.FC = () => {
+const Edit: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const waterCourses = useSelector(waterCourseSeletor);
+  const waterCoursefind = useSelector(waterCoursefindSeletor);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  // const [searchText, setSearchText] = useState<string>("");
-  // const [thailandDatabase, setThailandDatabase] = useState<object[]>([
-  //   {
-  //     district: "",
-  //   },
-  // ]);
-
-  useEffect(() => {
-    dispatch(fetchData());
-  }, [dispatch]);
-
-  const existingIds = waterCourses.map((item) => item.obstacle_id);
-
-  const missingIds = [];
-  for (let i = 1; i <= existingIds[existingIds.length - 1]; i++) {
-    if (!existingIds.includes(i)) {
-      missingIds.push(i);
-    }
-  }
+  const { id } = useParams<{ id: string }>();
 
   const [prevFormData, setPrevFormData] = useState({
-    obstacle_id: existingIds[existingIds.length - 1] + 1,
+    obstacle_id: 0,
     obstacle_type_id: 0,
     title: "",
     start_date: new Date(),
@@ -93,59 +50,63 @@ const Upload: React.FC = () => {
     longitude: 0,
     note: "",
     status: 0,
-    create_by: "",
-    create_date: new Date(),
+    create_by: null,
+    create_date: null,
+    update_by: "",
+    update_date: new Date(),
+    delete_by: "",
+    delete_date: null,
     end_date: new Date(),
     province_name: "",
     amphoe_name: "",
     tambon_name: "",
     mooban_name: "",
-    // province_code: 0,
-    // amphoe_code: 0,
-    // tambon_code: 0,
-    // mooban_code: 0,
+    province_code: 0,
+    amphoe_code: 0,
+    tambon_code: 0,
+    mooban_code: 0,
   });
 
-  // const uniqueProvinces = [...new Set(Database.map((item) => item.province))];
-  // const uniqueDatabase = uniqueProvinces.map((province) => ({
-  //   province,
-  //   amphoe: Database.filter((item) => item.province === province),
-  // }));
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchSelectData(id));
+    }
+  }, [dispatch]);
 
-  // useEffect(() => {
-  //   if (searchText === "") {
-  //     setThailandDatabase([]);
-  //   } else {
-  //     const filteredProvince = uniqueDatabase.filter((item) =>
-  //       item.province.includes(searchText)
-  //     );
-  //     console.log(filteredProvince);
-  //     setThailandDatabase(filteredProvince);
-  //   }
-  // }, [searchText]);
+  useEffect(() => {
+    if (waterCoursefind) {
+      setPrevFormData({
+        obstacle_id: waterCoursefind.obstacle_id || 0,
+        obstacle_type_id: waterCoursefind.obstacle_status || 0,
+        title: waterCoursefind.title || "",
+        start_date:
+          waterCoursefind.start_date.toString().split("T")[0] || new Date(),
+        obstacle_status: waterCoursefind.obstacle_status || 0,
+        latitude: waterCoursefind.latitude || 0,
+        longitude: waterCoursefind.longitude || 0,
+        note: waterCoursefind.note || "",
+        status: waterCoursefind.status || 0,
+        create_by: null,
+        create_date: null,
+        update_by: waterCoursefind.update_by || "",
+        update_date: new Date(),
+        delete_by: waterCoursefind.delete_by || "",
+        delete_date: null,
+        end_date:
+          waterCoursefind.end_date.toString().split("T")[0] || new Date(),
+        province_name: waterCoursefind.province_name || "",
+        amphoe_name: waterCoursefind.amphoe_name || "",
+        tambon_name: waterCoursefind.tambon_name || "",
+        mooban_name: waterCoursefind.mooban_name || "",
+        province_code: waterCoursefind.province_code || 0,
+        amphoe_code: waterCoursefind.amphoe_code || 0,
+        tambon_code: waterCoursefind.tambon_code || 0,
+        mooban_code: waterCoursefind.mooban_code || 0,
+      });
+    }
+  }, [waterCoursefind]);
 
-  // const handleSelect = (value: string) => {
-  //   console.log(thailandDatabase);
-
-  //   const filteredData: any[] = thailandDatabase.filter(
-  //     (item) => item.district === value
-  //   );
-
-  //   console.log(filteredData);
-
-  //   setPrevFormData((prev: prevFormData) => ({
-  //     ...prev,
-  //     tambon_name: value,
-  //     tambon_code: filteredData[0].district_code,
-  //     amphoe_name: filteredData[0].amphoe,
-  //     amphoe_code: filteredData[0].amphoe_code,
-  //     province_name: filteredData[0].province,
-  //     province_code: filteredData[0].province_code,
-  //   }));
-  //   setSearchText("");
-  // };
-
-  const handleInputChange = (
+  const handleChange = (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
@@ -158,15 +119,31 @@ const Upload: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleEdit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const {
       obstacle_id,
       obstacle_type_id,
       title,
+      start_date,
+      obstacle_status,
+      latitude,
+      longitude,
+      note,
+      status,
+      create_by,
+      create_date,
+      update_by,
+      end_date,
       province_name,
       amphoe_name,
       tambon_name,
+      mooban_name,
+      province_code,
+      amphoe_code,
+      tambon_code,
+      mooban_code,
     } = prevFormData;
 
     if (
@@ -177,20 +154,48 @@ const Upload: React.FC = () => {
       amphoe_name !== "" &&
       tambon_name !== ""
     ) {
-      // dispatch(createData(prevFormData));
+      const updateData = {
+        id: obstacle_id,
+        data: {
+          obstacle_type_id,
+          title,
+          start_date: new Date(start_date),
+          obstacle_status,
+          latitude,
+          longitude,
+          note,
+          status,
+          create_by,
+          create_date,
+          update_by,
+          update_date: new Date(),
+          end_date: new Date(end_date),
+          province_name,
+          amphoe_name,
+          tambon_name,
+          mooban_name,
+          province_code,
+          amphoe_code,
+          tambon_code,
+          mooban_code,
+        },
+      };
+
+      dispatch(editData({ id: updateData.id, data: updateData.data }));
+
       alert("บันทึกเสร็จสิ้น");
       setTimeout(() => {
         navigate("/");
-      }, 3000);
+      }, 1000);
     } else {
       alert("โปรดกรอกข้อมูลให้ครบทุกช่อง");
     }
   };
 
   return (
-    <form action="" method="post" onSubmit={handleSubmit}>
+    <form method="patch" onSubmit={handleEdit}>
       <HeaderContainer>
-        <FontTitle>บันทึกอุปสรรคเส้นทาง</FontTitle>
+        <FontTitle>อัพเดทข้อมูล</FontTitle>
         <div
           style={{
             display: "flex",
@@ -203,32 +208,28 @@ const Upload: React.FC = () => {
             <IoArrowBack size={"1.5rem"} color={"#2869CE"} />
           </Link>
           <ButtonComponent color={"primary"} type="submit">
-            <FaSave size={"1rem"} />
+            <MdModeEditOutline size={"1.25rem"} color={"#FFF"} />
             บันทึก
           </ButtonComponent>
         </div>
       </HeaderContainer>
-
-      <FormContainer>
+      <UpdateForm>
         <FormLeft>
           <Row>
             <div style={{ gridColumn: `span 3` }}>
               <InputComponent
-                type="number"
-                name="obstacle_id"
+                type={"number"}
                 inputname={"หมายเลขรหัส"}
-                onChange={handleInputChange}
                 value={prevFormData.obstacle_id}
                 disabled
               />
             </div>
             <div style={{ gridColumn: `span 3` }}>
               <InputContainerConmponent>
-                <InputLabel>สถานะ *</InputLabel>
+                <InputLabel>สถานะ</InputLabel>
                 <Select
                   name="status"
-                  required
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   value={prevFormData.status}
                 >
                   <option value="0">ยังพบอุปสรรค</option>
@@ -238,11 +239,10 @@ const Upload: React.FC = () => {
             </div>
             <div style={{ gridColumn: `span 3` }}>
               <InputContainerConmponent>
-                <InputLabel>ประเภทอุปสรรค *</InputLabel>
+                <InputLabel>ประเภทอุปสรรค</InputLabel>
                 <Select
                   name="obstacle_type_id"
-                  required
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   value={prevFormData.obstacle_type_id}
                 >
                   <option value="0"></option>
@@ -254,39 +254,34 @@ const Upload: React.FC = () => {
               </InputContainerConmponent>
             </div>
           </Row>
-          <Row
-            style={{ gridTemplateColumns: `repeat(8, 1fr)`, gridGap: `0.5rem` }}
-          >
+          <Row style={{ gridTemplateColumns: `repeat(8, 1fr)` }}>
             <div style={{ gridColumn: `span 4` }}>
               <InputComponent
                 type="date"
                 name="start_date"
-                inputname={"วันที่ ตั้งแต่ *"}
-                placeholder="เลือกวัน"
-                onChange={handleInputChange}
-                required
-                value={undefined}
+                inputname={"วันที่ ตั้งแต่"}
+                onChange={handleChange}
+                value={String(prevFormData.start_date)}
               />
             </div>
             <div style={{ gridColumn: `span 4` }}>
               <InputComponent
-                type="date"
                 name="end_date"
-                inputname={"วันที่ ถึง *"}
-                onChange={handleInputChange}
-                value={undefined}
+                type="date"
+                inputname={"วันที่ ถึง"}
+                onChange={handleChange}
+                value={String(prevFormData.end_date)}
               />
             </div>
           </Row>
           <Row>
             <div style={{ gridColumn: `span 9` }}>
               <InputContainerConmponent>
-                <InputLabel>ชื่อ *</InputLabel>
+                <InputLabel>ชื่อ</InputLabel>
                 <TextArea
                   name="title"
-                  required
-                  onChange={handleInputChange}
                   value={prevFormData.title}
+                  onChange={handleChange}
                 />
               </InputContainerConmponent>
             </div>
@@ -297,15 +292,14 @@ const Upload: React.FC = () => {
                 <InputLabel>หมายเหตุ</InputLabel>
                 <TextArea
                   style={{ height: `120px` }}
+                  onChange={handleChange}
                   name="note"
-                  onChange={handleInputChange}
                   value={prevFormData.note}
                 />
               </InputContainerConmponent>
             </div>
           </Row>
         </FormLeft>
-
         <FormRight>
           <h3>พื้นที่/พิกัด</h3>
           <Row style={{ gridTemplateColumns: `repeat(8, 1fr)` }}>
@@ -313,71 +307,28 @@ const Upload: React.FC = () => {
               <InputComponent
                 type="text"
                 name="province_name"
-                inputname={"จังหวัด *"}
-                required
-                // onChange={(e) => setSearchText(e.target.value)}
-                onChange={handleInputChange}
+                inputname={"จังหวัด"}
+                onChange={handleChange}
                 value={prevFormData.province_name}
               />
-              {/* <div
-                style={{
-                  position: `relative`,
-                }}
-              >
-                <ul
-                  style={{
-                    backgroundColor: `#FFF`,
-                    position: `absolute`,
-                    zIndex: `99`,
-                    top: `0`,
-                    marginBlock: `0`,
-                    width: `100%`,
-                  }}
-                >
-                  {thailandDatabase.map((item) => (
-                    <li
-                      style={{ cursor: "pointer" }}
-                      // onClick={() => handleSelect()}
-                    >
-                      {item.province}
-                    </li>
-                  ))}
-                </ul>
-              </div> */}
             </div>
             <div style={{ gridColumn: `span 4` }}>
-              {/* <InputContainerConmponent>
-                <InputLabel>อำเภอ *</InputLabel>
-                <Select
-                  name="amphoe_name"
-                  onChange={handleInputChange}
-                ></Select>
-              </InputContainerConmponent> */}
               <InputComponent
                 type="text"
                 name="amphoe_name"
                 inputname={"อำเภอ *"}
-                required
-                onChange={handleInputChange}
+                onChange={handleChange}
                 value={prevFormData.amphoe_name}
               />
             </div>
           </Row>
           <Row style={{ gridTemplateColumns: `repeat(8, 1fr)` }}>
             <div style={{ gridColumn: `span 4` }}>
-              {/* <InputContainerConmponent>
-                <InputLabel>ตำบล *</InputLabel>
-                <Select
-                  name="tambon_name"
-                  onChange={handleInputChange}
-                ></Select>
-              </InputContainerConmponent> */}
               <InputComponent
                 type="text"
                 name="tambon_name"
                 inputname={"ตำบล *"}
-                required
-                onChange={handleInputChange}
+                onChange={handleChange}
                 value={prevFormData.tambon_name}
               />
             </div>
@@ -385,8 +336,8 @@ const Upload: React.FC = () => {
               <InputComponent
                 type="text"
                 name="mooban_name"
-                inputname={"หมู่บ้าน"}
-                onChange={handleInputChange}
+                inputname={"หมู่บ้าน *"}
+                onChange={handleChange}
                 value={prevFormData.mooban_name}
               />
             </div>
@@ -397,7 +348,7 @@ const Upload: React.FC = () => {
                 type="number"
                 name="latitude"
                 inputname={"ละติจูด"}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 value={prevFormData.latitude}
               />
             </div>
@@ -406,7 +357,7 @@ const Upload: React.FC = () => {
                 type="number"
                 name="longitude"
                 inputname={"ลองจิจูด"}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 value={prevFormData.longitude}
               />
             </div>
@@ -446,10 +397,10 @@ const Upload: React.FC = () => {
             )}
           </Row>
         </FormRight>
-      </FormContainer>
+      </UpdateForm>
       {isOpen ? <GoogleMapComponent /> : null}
     </form>
   );
 };
 
-export default Upload;
+export default Edit;
