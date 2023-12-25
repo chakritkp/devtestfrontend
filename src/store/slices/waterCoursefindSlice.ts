@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import api from "../api";
 import { RootState } from "../store";
-import { WaterCourse, formattedDate } from "./waterCourseSlice";
+import { WaterCourse } from "./waterCourseSlice";
 
 
 export interface SingleDataState {

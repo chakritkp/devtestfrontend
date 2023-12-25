@@ -177,7 +177,7 @@ const Upload: React.FC = () => {
       amphoe_name !== "" &&
       tambon_name !== ""
     ) {
-      // dispatch(createData(prevFormData));
+      dispatch(createData(prevFormData));
       alert("บันทึกเสร็จสิ้น");
       setTimeout(() => {
         navigate("/");

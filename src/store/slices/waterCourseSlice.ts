@@ -202,7 +202,7 @@ const isDateInRange = (targetDate: string | null, startDate: Date, endDate: Date
         return formattedDate >= startDate && formattedDate <= endDate;
     }
 
-    return false; // ถ้า targetDate เป็น null หรือ undefined
+    return false;
 };
 
 export const { setData, setSearchTerm, setSelectedTypeID, setStartDate, setEndDate } = waterCourseSlice.actions;

@@ -1,4 +1,3 @@
-// GoogleMapComponent.tsx
 import React, { useState } from "react";
 import {
   APIProvider,
@@ -14,8 +13,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = () => {
   const GOOGLEMAP = import.meta.env.VITE_GOOGLE_MAP;
   const MAPID = import.meta.env.VITE_MAP_ID
   const [open, setOpen] = useState<boolean>(false)
-  const defaultCenter = { lat: 13.7563, lng: 100.5018 }; // ตำแหน่งเริ่มต้นของแผนที่
-
+  const defaultCenter = { lat: 13.7563, lng: 100.5018 };
   return (
     <APIProvider apiKey={GOOGLEMAP}>
       <div style={{ height: `100vh`, width: `100%` }}>
